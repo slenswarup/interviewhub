@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { InterviewExperience } from '../../types/database';
-import { X, Building, Calendar, User, Clock, Star, ExternalLink, Code2, Trophy, Target, ThumbsUp, ThumbsDown, MessageCircle, Send } from 'lucide-react';
+import { X, Building, Calendar, User, Clock, Star, ExternalLink, Code2, Trophy, Target, ThumbsUp, ThumbsDown, MessageCircle, Send, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../lib/api';
@@ -370,20 +370,27 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, isOpen, o
               Interview Process
             </h4>
             <div className="prose prose-gray max-w-none">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {safeExperience.interview_process}
-              </p>
+              {safeExperience.interview_process ? (
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {safeExperience.interview_process}
+                </p>
+              ) : (
+                <div className="flex items-center space-x-2 text-gray-500 italic">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>No interview process details provided</span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Interview Rounds */}
-          {safeExperience.rounds.length > 0 && (
-            <div className="space-y-6">
-              <h4 className="text-xl font-bold text-gray-900 flex items-center">
-                <Code2 className="w-5 h-5 mr-2 text-blue-600" />
-                Interview Rounds ({safeExperience.rounds.length})
-              </h4>
-              
+          <div className="space-y-6">
+            <h4 className="text-xl font-bold text-gray-900 flex items-center">
+              <Code2 className="w-5 h-5 mr-2 text-blue-600" />
+              Interview Rounds ({safeExperience.rounds.length})
+            </h4>
+            
+            {safeExperience.rounds.length > 0 ? (
               <div className="space-y-6">
                 {safeExperience.rounds.map((round, index) => (
                   <div key={round.id || index} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -392,7 +399,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, isOpen, o
                       <div className="flex items-center justify-between">
                         <div>
                           <h5 className="text-lg font-bold text-gray-900">
-                            Round {round.round_number}: {round.round_name}
+                            Round {round.round_number}: {round.round_name || 'Unnamed Round'}
                           </h5>
                           <p className="text-sm text-gray-600 mt-1">
                             {round.round_type.replace('_', ' ').toUpperCase()}
@@ -404,17 +411,24 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, isOpen, o
                           round.result === 'failed' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
                         }`}>
-                          {round.result.toUpperCase()}
+                          {round.result ? round.result.toUpperCase() : 'NO RESULT'}
                         </span>
                       </div>
                     </div>
 
                     {/* Round Content */}
                     <div className="p-6">
-                      <p className="text-gray-700 mb-6 leading-relaxed">{round.description}</p>
+                      {round.description ? (
+                        <p className="text-gray-700 mb-6 leading-relaxed">{round.description}</p>
+                      ) : (
+                        <div className="flex items-center space-x-2 text-gray-500 italic mb-6">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span>No round description provided</span>
+                        </div>
+                      )}
                       
                       {/* Coding Questions */}
-                      {round.coding_questions && round.coding_questions.length > 0 && (
+                      {round.coding_questions && round.coding_questions.length > 0 ? (
                         <div>
                           <h6 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
                             <Code2 className="w-4 h-4 mr-2" />
@@ -423,7 +437,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, isOpen, o
                           
                           <div className="space-y-4">
                             {round.coding_questions.map((question, qIndex) => {
-                              const difficultyData = getDifficultyData(question.difficulty);
+                              const difficultyData = getDifficultyData(question.difficulty || 'medium');
                               
                               return (
                                 <div key={question.id || qIndex} className={`${difficultyData.bgColor} rounded-xl p-6 border-2 border-opacity-20`}>
@@ -431,12 +445,12 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, isOpen, o
                                   <div className="flex items-start justify-between mb-4">
                                     <div className="flex-1">
                                       <h7 className="text-xl font-bold text-gray-900 mb-2 block">
-                                        {qIndex + 1}. {question.title}
+                                        {qIndex + 1}. {question.title || 'Untitled Question'}
                                       </h7>
                                       <div className="flex items-center space-x-3">
                                         <span className={`inline-flex items-center px-3 py-1 text-sm font-bold rounded-full border-2 ${difficultyData.color}`}>
                                           <span className="mr-1">{difficultyData.icon}</span>
-                                          {question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)}
+                                          {question.difficulty ? question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1) : 'Unknown'}
                                         </span>
                                       </div>
                                     </div>
@@ -444,13 +458,20 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, isOpen, o
 
                                   {/* Question Description */}
                                   <div className="mb-4">
-                                    <p className="text-gray-700 leading-relaxed">{question.description}</p>
+                                    {question.description ? (
+                                      <p className="text-gray-700 leading-relaxed">{question.description}</p>
+                                    ) : (
+                                      <div className="flex items-center space-x-2 text-gray-500 italic">
+                                        <AlertTriangle className="w-4 h-4" />
+                                        <span>No question description provided</span>
+                                      </div>
+                                    )}
                                   </div>
 
                                   {/* Topics */}
-                                  {question.topics && question.topics.length > 0 && (
-                                    <div className="mb-4">
-                                      <h8 className="text-sm font-semibold text-gray-700 mb-2 block">Topics:</h8>
+                                  <div className="mb-4">
+                                    <h8 className="text-sm font-semibold text-gray-700 mb-2 block">Topics:</h8>
+                                    {question.topics && question.topics.length > 0 ? (
                                       <div className="flex flex-wrap gap-2">
                                         {question.topics.map((topic, i) => (
                                           <span key={i} className="px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-full border border-blue-200">
@@ -458,13 +479,44 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, isOpen, o
                                           </span>
                                         ))}
                                       </div>
+                                    ) : (
+                                      <div className="flex items-center space-x-2 text-gray-500 italic">
+                                        <AlertTriangle className="w-4 h-4" />
+                                        <span>No topics specified</span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Solution Approach */}
+                                  {question.solution_approach && (
+                                    <div className="mb-4">
+                                      <h8 className="text-sm font-semibold text-gray-700 mb-2 block">Solution Approach:</h8>
+                                      <p className="text-gray-700 bg-white p-3 rounded-lg border">{question.solution_approach}</p>
+                                    </div>
+                                  )}
+
+                                  {/* Complexity */}
+                                  {(question.time_complexity || question.space_complexity) && (
+                                    <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      {question.time_complexity && (
+                                        <div>
+                                          <h8 className="text-sm font-semibold text-gray-700 mb-1 block">Time Complexity:</h8>
+                                          <p className="text-gray-700 font-mono bg-white px-3 py-2 rounded border">{question.time_complexity}</p>
+                                        </div>
+                                      )}
+                                      {question.space_complexity && (
+                                        <div>
+                                          <h8 className="text-sm font-semibold text-gray-700 mb-1 block">Space Complexity:</h8>
+                                          <p className="text-gray-700 font-mono bg-white px-3 py-2 rounded border">{question.space_complexity}</p>
+                                        </div>
+                                      )}
                                     </div>
                                   )}
 
                                   {/* Platform Links */}
-                                  {question.platform_links && question.platform_links.length > 0 && (
-                                    <div>
-                                      <h8 className="text-sm font-semibold text-gray-700 mb-3 block">Practice Links:</h8>
+                                  <div>
+                                    <h8 className="text-sm font-semibold text-gray-700 mb-3 block">Practice Links:</h8>
+                                    {question.platform_links && question.platform_links.length > 0 ? (
                                       <div className="flex flex-wrap gap-3">
                                         {question.platform_links.map((link, lIndex) => {
                                           const platformData = getPlatformData(link.platform);
@@ -494,20 +546,35 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, isOpen, o
                                           );
                                         })}
                                       </div>
-                                    </div>
-                                  )}
+                                    ) : (
+                                      <div className="flex items-center space-x-2 text-gray-500 italic">
+                                        <AlertTriangle className="w-4 h-4" />
+                                        <span>No practice links provided</span>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               );
                             })}
                           </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2 text-gray-500 italic">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span>No coding questions for this round</span>
                         </div>
                       )}
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="bg-gray-50 rounded-lg p-8 text-center">
+                <Code2 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">No interview rounds details provided</p>
+              </div>
+            )}
+          </div>
 
           {/* Advice Section */}
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
@@ -516,21 +583,33 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ experience, isOpen, o
               Advice for Future Candidates
             </h4>
             <div className="prose prose-gray max-w-none">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {safeExperience.advice}
-              </p>
+              {safeExperience.advice ? (
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {safeExperience.advice}
+                </p>
+              ) : (
+                <div className="flex items-center space-x-2 text-gray-500 italic">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>No advice provided</span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Salary Information */}
-          {safeExperience.salary_offered && (
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
-              <h4 className="text-xl font-bold text-gray-900 mb-3 flex items-center">
-                💰 Salary Offered
-              </h4>
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+            <h4 className="text-xl font-bold text-gray-900 mb-3 flex items-center">
+              💰 Salary Offered
+            </h4>
+            {safeExperience.salary_offered ? (
               <p className="text-lg font-semibold text-gray-800">{safeExperience.salary_offered}</p>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center space-x-2 text-gray-500 italic">
+                <AlertTriangle className="w-4 h-4" />
+                <span>No salary information provided</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

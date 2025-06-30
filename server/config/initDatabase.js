@@ -55,7 +55,8 @@ export const createDatabaseSchema = async () => {
         salary_offered VARCHAR(100),
         is_anonymous BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        CONSTRAINT check_interview_date_not_future CHECK (interview_date <= CURRENT_DATE)
       )
     `);
 

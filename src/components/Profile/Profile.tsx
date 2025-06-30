@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 import api from '../../lib/api';
 import { InterviewExperience } from '../../types/database';
 import { User, Mail, Calendar, Building, Edit, Eye, MessageCircle, ThumbsUp, Award, TrendingUp } from 'lucide-react';
@@ -56,11 +57,25 @@ const Profile: React.FC = () => {
   const fetchUserExperiences = async () => {
     try {
       setLoading(true);
-      // Mock data for now - replace with actual API call
-      const mockExperiences: InterviewExperience[] = [];
-      setExperiences(mockExperiences);
+      // Fetch experiences created by the current user
+      const response = await api.get('/experiences');
+      
+      // Filter experiences by current user
+      let allExperiences = [];
+      if (response.data.experiences) {
+        allExperiences = response.data.experiences;
+      } else if (Array.isArray(response.data)) {
+        allExperiences = response.data;
+      }
+      
+      const userExperiences = allExperiences.filter((exp: any) => 
+        exp.user_id === user?.id || exp.user?.id === user?.id
+      );
+      
+      setExperiences(userExperiences);
     } catch (error) {
       console.error('Error fetching user experiences:', error);
+      setExperiences([]);
     } finally {
       setLoading(false);
     }
@@ -95,7 +110,7 @@ const Profile: React.FC = () => {
     );
   }
 
-  // Mock statistics
+  // Calculate statistics from user's experiences
   const stats = {
     totalExperiences: experiences.length,
     totalViews: experiences.reduce((sum, exp) => sum + (exp._count?.views || 0), 0),
@@ -341,12 +356,12 @@ const Profile: React.FC = () => {
           <div className="text-center py-12">
             <Award className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 mb-4">You haven't shared any interview experiences yet.</p>
-            <button
-              onClick={() => window.location.href = '/share'}
+            <Link
+              to="/share"
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Share Your First Experience
-            </button>
+            </Link>
           </div>
         )}
       </div>

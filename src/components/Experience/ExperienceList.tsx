@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
 import { InterviewExperience } from '../../types/database';
 import ExperienceCard from './ExperienceCard';
 import ExperienceModal from './ExperienceModal';
 import { Search, Filter, Users, Plus, AlertCircle, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const ExperienceList: React.FC = () => {
   const [experiences, setExperiences] = useState<InterviewExperience[]>([]);
@@ -14,6 +16,8 @@ const ExperienceList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterResult, setFilterResult] = useState<string>('all');
   const [retryCount, setRetryCount] = useState(0);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   // Debounced search function
   const debouncedFetchExperiences = useCallback(
@@ -24,7 +28,7 @@ const ExperienceList: React.FC = () => {
   );
 
   useEffect(() => {
-    // Initial load
+    // Initial load - always fetch experiences regardless of login status
     fetchExperiences(searchTerm, filterResult);
   }, []);
 
@@ -102,6 +106,12 @@ const ExperienceList: React.FC = () => {
   };
 
   const handleExperienceClick = async (experience: InterviewExperience) => {
+    // Check if user is logged in before allowing to view experience details
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
     try {
       console.log('Clicking on experience:', experience.id);
       
@@ -159,6 +169,11 @@ const ExperienceList: React.FC = () => {
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Interview Experiences</h1>
         <p className="text-gray-600">Learn from real interview experiences shared by IIITA students</p>
+        {!user && (
+          <p className="text-sm text-blue-600 mt-2">
+            <Link to="/login" className="underline">Sign in</Link> to view detailed experiences
+          </p>
+        )}
       </div>
 
       {/* Error Message */}
@@ -244,7 +259,7 @@ const ExperienceList: React.FC = () => {
               : 'Be the first to share your interview experience!'
             }
           </p>
-          {(!searchTerm && filterResult === 'all') && (
+          {(!searchTerm && filterResult === 'all') && user && (
             <Link
               to="/share"
               className="inline-flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

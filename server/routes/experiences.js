@@ -8,19 +8,11 @@ const router = express.Router();
 // Track page view
 const trackView = async (experienceId, userId, ipAddress) => {
   try {
-    // Check if this user/IP has already viewed this experience today
-    const existingView = await query(`
-      SELECT id FROM interview_views 
-      WHERE experience_id = $1 AND ip_address = $2 
-      AND created_at > NOW() - INTERVAL '24 hours'
-    `, [experienceId, ipAddress]);
-
-    if (existingView.rows.length === 0) {
-      await query(`
-        INSERT INTO interview_views (experience_id, user_id, ip_address)
-        VALUES ($1, $2, $3)
-      `, [experienceId, userId, ipAddress]);
-    }
+    // Always track a new view when someone opens an experience
+    await query(`
+      INSERT INTO interview_views (experience_id, user_id, ip_address)
+      VALUES ($1, $2, $3)
+    `, [experienceId, userId, ipAddress]);
   } catch (error) {
     console.error('Error tracking view:', error);
   }
@@ -183,7 +175,7 @@ router.get('/:id', async (req, res) => {
 
     console.log('Fetching experience details for ID:', id);
 
-    // Track view
+    // Track view - increment view count every time someone opens the experience
     await trackView(id, req.user?.id, ipAddress);
 
     // Get experience with user and company details
@@ -290,11 +282,25 @@ router.get('/:id', async (req, res) => {
       return acc;
     }, { upvote: 0, downvote: 0 });
 
+    // Get updated view count
+    const viewCountResult = await query(`
+      SELECT COUNT(*) as view_count
+      FROM interview_views
+      WHERE experience_id = $1
+    `, [id]);
+
+    const viewCount = parseInt(viewCountResult.rows[0].view_count) || 0;
+
     res.json({
       ...experience,
       rounds: roundsResult.rows,
       comments: commentsResult.rows,
-      votes
+      votes,
+      _count: {
+        views: viewCount,
+        comments: commentsResult.rows.length,
+        votes: votes.upvote || 0
+      }
     });
   } catch (error) {
     console.error('Get experience error:', error);
@@ -309,7 +315,16 @@ router.get('/:id', async (req, res) => {
 router.post('/', authenticateToken, [
   body('company_id').notEmpty().withMessage('Company ID is required'),
   body('position').notEmpty().withMessage('Position is required'),
-  body('interview_date').isISO8601().withMessage('Valid interview date is required'),
+  body('interview_date').isISO8601().withMessage('Valid interview date is required').custom((value) => {
+    const interviewDate = new Date(value);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // Set to end of today
+    
+    if (interviewDate > today) {
+      throw new Error('Interview date cannot be in the future');
+    }
+    return true;
+  }),
   body('result').isIn(['selected', 'rejected', 'pending']).withMessage('Valid result is required'),
   body('overall_rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
   body('difficulty_level').isInt({ min: 1, max: 5 }).withMessage('Difficulty must be between 1 and 5'),
