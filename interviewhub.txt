@@ -1,0 +1,26 @@
+frontend url - https://interviewhub-cyan.vercel.app
+backend url - https://interviewhub-4h5j.onrender.com
+
+database connection string - postgresql://interviewhub_user:qvR9LcglfuZVYJLfu0uZrz8okATnQXAK@dpg-d1gkaoemcj7s73ct2ai0-a.oregon-postgres.render.com/interviewhub_db
+
+
+
+
+
+
+
+
+
+problems - 
+
+1. in the header, in which page , we are currently in, that should be highlighted , example -when we are in home page, then , 'experience' tab should be highlighted
+
+2. in 'Share Your Interview Experience', when we search companies, then in the search results , their logos are not showing , check it .
+
+3. make a toggle option so that user can share experience ""Anonymously" , in that case, user's name will not be shown , it will show "Anonymous" 
+
+4. the '0 views 0 comments 0 upvotes' are not updating , do something so that how many time the that experience is showing on scrren should be refelected ,and user can comment , upvotes , and it should also be shown 
+
+5. make another table which is for me (Developer only) , how many times , my website will open that will be loaded here' , so that i can understand total views
+
+6. during sharing experience , when user add questions , then , when user adds topic , that topics are not adding correctly , make it more perfect . like no comma separation . make box , each box user can write one topic only , then click + option to add another topic name
