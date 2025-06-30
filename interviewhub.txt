@@ -1,3 +1,5 @@
+
+
 frontend url - https://interviewhub-cyan.vercel.app
 backend url - https://interviewhub-4h5j.onrender.com
 
@@ -13,14 +15,15 @@ database connection string - postgresql://interviewhub_user:qvR9LcglfuZVYJLfu0uZ
 
 problems - 
 
-1. in the header, in which page , we are currently in, that should be highlighted , example -when we are in home page, then , 'experience' tab should be highlighted
+1. on experience tab , we need all experience should be shown irrespective of any user has loggedin or not . but , if he clicks on any experience , then , if nobody has logged in , then it will navigate to login page , if logged in , then the experience will open 
 
-2. in 'Share Your Interview Experience', when we search companies, then in the search results , their logos are not showing , check it .
+2. when we click on any experience , all fields are not showing , like coding questions , difficulty all . all details should be shown clearly , if user has not shared any information during experience sharing , i mean , kept any field vacant , then also show that field but show it vacant
 
-3. make a toggle option so that user can share experience ""Anonymously" , in that case, user's name will not be shown , it will show "Anonymous" 
+3. showing 'failed to create experience.' 
 
-4. the '0 views 0 comments 0 upvotes' are not updating , do something so that how many time the that experience is showing on scrren should be refelected ,and user can comment , upvotes , and it should also be shown 
+4. interview date cannot be in future.
 
-5. make another table which is for me (Developer only) , how many times , my website will open that will be loaded here' , so that i can understand total views
 
-6. during sharing experience , when user add questions , then , when user adds topic , that topics are not adding correctly , make it more perfect . like no comma separation . make box , each box user can write one topic only , then click + option to add another topic name
+5. views , comment , upvotes are not updating correctly .    the more number of times an experience will be opened , the views will increase accordingly
+
+6. in profile page, under 'my interview experience' , clicking share your first experience is navigating to login page , but no need it , as he is seeing his profile , it means , he has already logged in .  and even after sharing experience , that is not being reflected to his profile page
